@@ -32,10 +32,12 @@ int main ()
 		BeginDrawing();
 
 		// Setup the back buffer for drawing (clear color and depth buffers)
-		ClearBackground(BLACK);
+		ClearBackground(WHITE);
 
 		// draw some text using the default font
-		DrawText("Hello Raylib", 200,200,20,WHITE);
+		DrawText("Hello Raylib", 200,200,20,BLACK);
+		
+		DrawGrid(10, 1);
 
 		// draw our texture to the screen
 		DrawTexture(wabbit, 400, 200, WHITE);
