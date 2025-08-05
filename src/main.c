@@ -24,7 +24,7 @@ struct masslike {
 	Color color;
 };
 
-#define n 3
+#define n 4
 
 double getMass(struct masslike m) {
 	return m.density*m.size.x*m.size.y;
@@ -47,7 +47,7 @@ int main ()
 	int i,j;
 	for(i = 0; i < n; i++)
     {
-		masses[i].p = (Vector2){0.1,0.1};
+		masses[i].p = (Vector2){((double)GetRandomValue(1,950))/1000,((double)GetRandomValue(1,950))/1000};
 		masses[i].v = (Vector2){0,0};
 		masses[i].a = (Vector2){0,0};
 		masses[i].v0 = (Vector2){0,0};
@@ -57,14 +57,14 @@ int main ()
         masses[i].size = (Vector2){0.02,0.02};
     }
 
-	masses[0].density = 5;
+	masses[0].density = 1;
 	masses[0].p = (Vector2){0.2, 0.2};
 	masses[0].v = (Vector2){0.0,0.0};
 	masses[0].color = RED;
 
-	masses[1].density=5;
+	masses[1].density=1;
 	masses[1].p = (Vector2){0.5, 0.5};
-	masses[1].size = (Vector2){0.1,0.1};
+	masses[1].size = (Vector2){0.05,0.05};
 	masses[1].v = (Vector2){0.0,0.01};
 	masses[1].color = BLUE;
 
