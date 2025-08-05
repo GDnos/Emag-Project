@@ -17,12 +17,14 @@ by Jeffery Myers is marked with CC0 1.0. To view a copy of this license, visit h
 struct masslike {
 	Vector2 p;
 	Vector2 v;
+	Vector2 v0;
 	Vector2 a;
 	Vector2 size;
 	double density;
+	Color color;
 };
 
-#define n 2
+#define n 3
 
 double getMass(struct masslike m) {
 	return m.density*m.size.x*m.size.y;
@@ -45,9 +47,11 @@ int main ()
 	int i,j;
 	for(i = 0; i < n; i++)
     {
-		masses[i].p = (Vector2){0,0};
+		masses[i].p = (Vector2){0.1,0.1};
 		masses[i].v = (Vector2){0,0};
 		masses[i].a = (Vector2){0,0};
+		masses[i].v0 = (Vector2){0,0};
+		masses[i].color = WHITE;
 
         masses[i].density = 1;
         masses[i].size = (Vector2){0.02,0.02};
@@ -56,10 +60,13 @@ int main ()
 	masses[0].density = 5;
 	masses[0].p = (Vector2){0.2, 0.2};
 	masses[0].v = (Vector2){0.0,0.0};
+	masses[0].color = RED;
 
 	masses[1].density=5;
 	masses[1].p = (Vector2){0.5, 0.5};
-	masses[0].v = (Vector2){0.0,0.01};
+	masses[1].size = (Vector2){0.1,0.1};
+	masses[1].v = (Vector2){0.0,0.01};
+	masses[1].color = BLUE;
 
 	for (time = 0; time < timemax; time += dt) {
 		for (i=0;i<n;i++) {
@@ -86,11 +93,8 @@ int main ()
 					#define mass1 getMass(m1)
 					#define mass2 getMass(m2)
 
-					m1.v.x = m1.v.x*(mass1-mass2)/(mass1+mass2) + m2.v.x*(2*mass2)/(mass1+mass2);
-					m1.v.y = m1.v.y*(mass1-mass2)/(mass1+mass2) + m2.v.y*(2*mass2)/(mass1+mass2);
-					
-					m2.v.x = m1.v.x*(2*mass1)/(mass1+mass2) - m2.v.x*(mass1-mass2)/(mass1+mass2);
-					m2.v.y = m1.v.y*(2*mass1)/(mass1+mass2) - m2.v.y*(mass1-mass2)/(mass1+mass2);
+					m1.v.x = m1.v.x*(mass1-mass2)/(mass1+mass2) + m2.v0.x*(2*mass2)/(mass1+mass2);
+					m1.v.y = m1.v.y*(mass1-mass2)/(mass1+mass2) + m2.v0.y*(2*mass2)/(mass1+mass2);
 					
 
 					#undef mass1
@@ -119,22 +123,25 @@ int main ()
 				}
 			}
 
-			m1.p = Vector2Add(m1.p, Vector2Scale(m1.v, dt));
-			positions[i][(int)(time/dt)] = m1.p;
-
 			#undef m1
+		}
+		for (i=0;i<n;i++) {
+			#define m1 masses[i]
+			m1.p = Vector2Add(m1.p, Vector2Scale(m1.v, dt));
+			m1.v0 = m1.v;
+			positions[i][(int)(time/dt)] = m1.p;
 		}
 	}
 	time = 0;
 	while (!WindowShouldClose())
 	{
-		time = time + dt;
+		time = time + 10*dt;
 
 		BeginDrawing();
 		ClearBackground(BLACK);
 		if (time < timemax) {
 			for(i=0;i<n;i++){
-				DrawRectangle(1200*positions[i][(int)(time/dt)].x,1200*positions[i][(int)(time/dt)].y,masses[i].size.x*1200,masses[i].size.y*1200,WHITE);
+				DrawRectangle(1200*positions[i][(int)(time/dt)].x,1200*positions[i][(int)(time/dt)].y,masses[i].size.x*1200,masses[i].size.y*1200,masses[i].color);
 			}
 			
 		}
