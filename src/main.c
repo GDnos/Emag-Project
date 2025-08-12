@@ -25,7 +25,7 @@ struct chargelike {
 	double charge;
 };
 
-#define gridsize 100
+#define gridsize 50
 #define n 2
 
 struct fieldlike fieldlines[gridsize][gridsize];
@@ -36,11 +36,11 @@ double log_scale(double input) {
     if (input <= 0.0) return 0.0;
 
     double log_val = log10(input);  // log10 of input
-    double scaled = (log_val + 9.0) / 9.0;  // map -9..0 → 0..1
+    double scaled = (log_val + 9.0) / 9.0;  // map -9.0 → 0..1
     return scaled;
 }
 
-Color GetRainbowColor(float t) {
+Color GetRainbowColor(float t, double tr) {
     // Clamp t between 0 and 1
     if (t < 0.0f) t = 0.0f;
     if (t > 1.0f) t = 1.0f;
@@ -68,14 +68,15 @@ Color GetRainbowColor(float t) {
     unsigned char r = (unsigned char)((rf + m) * 255);
     unsigned char g = (unsigned char)((gf + m) * 255);
     unsigned char b = (unsigned char)((bf + m) * 255);
-    unsigned char a = 255;
+    unsigned char a = (int)(255*tr);
 
     return CLITERAL(Color){ r, g, b, a };
 }
 
 int main ()
 {
-	InitWindow(1200,1200,"basic window");
+	#define WindowSize 1200
+	InitWindow(WindowSize,WindowSize,"basic window");
 	SetTargetFPS(24);
 
 	// body setup
@@ -83,7 +84,7 @@ int main ()
 
 	for(i=0;i<n;i++) {
 		charges[i].p = (Vector2){0.1,0.1};
-		charges[i].charge = 10;
+		charges[i].charge = 3;
 	}
 
 	charges[0].p = (Vector2){0.5,0.4};
@@ -93,11 +94,13 @@ int main ()
 	for(i=0;i<gridsize;i++) {
 		for(j=0;j<gridsize;j++) {
 			#define fieldline fieldlines[i][j]
-			fieldline.p = (Vector2){(double)(i)/gridsize,(double)(j)/gridsize};
+			fieldline.p = (Vector2){((double)(i))/(double)(gridsize),((double)(j))/(double)(gridsize)};
 			fieldline.direction = (Vector2){0,0};
 			fieldline.Magnitude = 0;
 		}
 	}
+	
+	int rhythm = 0;
 
 	while (!WindowShouldClose())
 	{
@@ -108,8 +111,8 @@ int main ()
 		for(i=0;i<gridsize;i++) {
 			for(j=0;j<gridsize;j++) {
 				#define fieldline fieldlines[i][j]
-				fieldline.direction = (Vector2){0,0};
-				Vector2 forceVector = (Vector2){0,0};
+				fieldline.direction = (Vector2){0.0,0.0};
+				Vector2 forceVector = (Vector2){0.0,0.0};
 				for(k=0;k<n;k++) {
 					#define chargebit charges[k]
 					if (Vector2Length(Vector2Subtract(fieldline.p, chargebit.p)) < 0.01) {
@@ -129,25 +132,41 @@ int main ()
 			DrawRectangle(1200*charges[k].p.x-20, 1200*charges[k].p.y-20, 40,40, RED);
 		}
 		double highestMag = 0;
-		for(i=0;i<gridsize;i++) {
-			for(j=0;j<gridsize;j++) {
-				#define fieldline fieldlines[i][j]
-				if (fieldline.Magnitude > highestMag) {
-					highestMag = fieldline.Magnitude;
-				}
-				#undef fieldline
+		if(rhythm > 60) {
+			rhythm = 0;
+		}
+		else {
+			rhythm += 1;
+		}
+		// for(i=0;i<gridsize;i++) {
+		// 	for(j=0;j<gridsize;j++) {
+		// 		#define fieldline fieldlines[i][j]
+		// 		if (fieldline.Magnitude > highestMag) {
+		// 			highestMag = fieldline.Magnitude;
+		// 		}
+		// 		#undef fieldline
+		// 	}
+		// }
+		for (i=0;i<n;i++) {
+			#define charg charges[i]
+
+			if(fabs(100*charg.charge) > highestMag) {
+				highestMag = fabs(100*charg.charge);
 			}
+
+			#undef charg
 		}
 		for(i=0;i<gridsize;i++) {
 			for(j=0;j<gridsize;j++) {
 				#define fieldline fieldlines[i][j]
 				// double length = (fieldline.Magnitude);
-				double length = 0.8/((double)gridsize);
-				#define clr GetRainbowColor(log_scale(fieldline.Magnitude/(highestMag)))
+				double length = (((double)rhythm/60)*0.8)/((double)gridsize);
+				#define clr GetRainbowColor(log_scale(fieldline.Magnitude/(highestMag)), 1)
+				// #define clr CLITERAL(Color) {255,255,255,255*log_scale(fieldline.Magnitude/(highestMag))}
 				// #define clr 
 				// DrawRectangle(1200*fieldline.p.x, 1200*fieldline.p.y, 10,10, BLUE);
 				
-				DrawLine((int)(1200*fieldline.p.x), (int)(1200*fieldline.p.y), (int)(1200*fieldline.direction.x*length + 1200*fieldline.p.x), (int)(1200*fieldline.direction.y*length + fieldline.p.y*1200), clr);
+				DrawLine((int)(WindowSize*fieldline.p.x), (int)(WindowSize*fieldline.p.y), (int)(WindowSize*fieldline.direction.x*length + WindowSize*fieldline.p.x), (int)(WindowSize*fieldline.direction.y*length + fieldline.p.y*WindowSize), clr);
 				#undef clr
 				#undef fieldline
 			}
